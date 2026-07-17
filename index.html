@@ -32,7 +32,38 @@
   ]
 }
 ;</script>
-<script defer>const FILTERS = ["全部", "美妆", "珠宝", "公告", "渠道", "政策"];
+  </head>
+  <body>
+    <main class="workspace">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">BJ</div>
+          <div>
+            <p class="brand-name">美妆珠宝研究档案</p>
+            <p class="brand-subtitle">A股与港股 · 每日晨报库</p>
+          </div>
+        </div>
+        <div class="sync-state"><span class="sync-dot" aria-hidden="true"></span><span id="sync-text">正在读取档案</span></div>
+      </header>
+
+      <section class="control-band" aria-label="日报检索">
+        <label class="search-field">
+          <span class="sr-only">搜索日报</span>
+          <input id="search-input" type="search" placeholder="搜索公司、事件、渠道或政策" autocomplete="off" />
+          <kbd>⌘ K</kbd>
+        </label>
+        <div id="quick-filters" class="quick-filters" aria-label="主题筛选"></div>
+      </section>
+
+      <div class="content-grid">
+        <aside class="archive-panel" aria-label="日报日期列表">
+          <div class="panel-heading"><span>日报索引</span><span id="report-count">0</span></div>
+          <div id="archive-list" class="archive-list"></div>
+        </aside>
+        <article id="report-view" class="report-view" aria-live="polite"></article>
+      </div>
+    </main>
+  <script>const FILTERS = ["全部", "美妆", "珠宝", "公告", "渠道", "政策"];
 const FILTER_ALIASES = {
   美妆: ["美妆", "化妆品", "护肤", "胶原"],
   珠宝: ["珠宝", "黄金", "金价"],
@@ -169,36 +200,5 @@ Promise.resolve({ ok: true, json: () => Promise.resolve(INLINE_REPORT_DATA) })
     elements.report.innerHTML = '<div class="empty-report"><h1>暂时无法读取日报</h1><p>请刷新页面后重试。</p></div>';
   });
 </script>
-  </head>
-  <body>
-    <main class="workspace">
-      <header class="topbar">
-        <div class="brand-block">
-          <div class="brand-mark" aria-hidden="true">BJ</div>
-          <div>
-            <p class="brand-name">美妆珠宝研究档案</p>
-            <p class="brand-subtitle">A股与港股 · 每日晨报库</p>
-          </div>
-        </div>
-        <div class="sync-state"><span class="sync-dot" aria-hidden="true"></span><span id="sync-text">正在读取档案</span></div>
-      </header>
-
-      <section class="control-band" aria-label="日报检索">
-        <label class="search-field">
-          <span class="sr-only">搜索日报</span>
-          <input id="search-input" type="search" placeholder="搜索公司、事件、渠道或政策" autocomplete="off" />
-          <kbd>⌘ K</kbd>
-        </label>
-        <div id="quick-filters" class="quick-filters" aria-label="主题筛选"></div>
-      </section>
-
-      <div class="content-grid">
-        <aside class="archive-panel" aria-label="日报日期列表">
-          <div class="panel-heading"><span>日报索引</span><span id="report-count">0</span></div>
-          <div id="archive-list" class="archive-list"></div>
-        </aside>
-        <article id="report-view" class="report-view" aria-live="polite"></article>
-      </div>
-    </main>
-  </body>
+</body>
 </html>
