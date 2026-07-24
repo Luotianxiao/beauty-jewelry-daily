@@ -290,5 +290,142 @@ Promise.resolve({ ok: true, json: () => Promise.resolve(INLINE_REPORT_DATA) })
     elements.report.innerHTML = '<div class="empty-report"><h1>暂时无法读取日报</h1><p>请刷新页面后重试。</p></div>';
   });
 </script>
+<script>const FILTERS = ["全部", "美妆", "珠宝", "公告", "渠道", "政策"];
+const FILTER_ALIASES = {
+  美妆: ["美妆", "化妆品", "护肤", "胶原"],
+  珠宝: ["珠宝", "黄金", "金价"],
+  公告: ["公告", "分红", "权益分派"],
+  渠道: ["渠道", "618", "天猫", "抖音", "小红书", "同店"],
+  政策: ["政策", "监管", "社零", "统计局"],
+};
+
+const state = { reports: [], query: "", filter: "全部", selectedDate: "" };
+const elements = {
+  archive: document.querySelector("#archive-list"),
+  count: document.querySelector("#report-count"),
+  filters: document.querySelector("#quick-filters"),
+  report: document.querySelector("#report-view"),
+  search: document.querySelector("#search-input"),
+  sync: document.querySelector("#sync-text"),
+};
+
+function escapeHtml(value = "") {
+  return String(value).replace(/[&<>'"]/g, (char) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;",
+  })[char]);
+}
+
+function formatDate(date) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric", month: "long", day: "numeric", weekday: "short",
+  }).format(new Date(`${date}T00:00:00+08:00`));
+}
+
+function searchableText(report) {
+  return JSON.stringify(report).toLowerCase();
+}
+
+function filteredReports() {
+  const query = state.query.trim().toLowerCase();
+  return state.reports.filter((report) => {
+    const text = searchableText(report);
+    const matchesTopic = state.filter === "全部" || FILTER_ALIASES[state.filter].some((word) => text.includes(word));
+    return matchesTopic && (!query || text.includes(query));
+  });
+}
+
+function renderFilters() {
+  elements.filters.innerHTML = FILTERS.map((filter) => `
+    <button type="button" class="filter-button${state.filter === filter ? " active" : ""}" data-filter="${filter}">${filter}</button>
+  `).join("");
+}
+
+function renderArchive(reports) {
+  elements.count.textContent = String(reports.length);
+  if (!reports.length) {
+    elements.archive.innerHTML = '<div class="empty-list">没有找到匹配的日报</div>';
+    return;
+  }
+  elements.archive.innerHTML = reports.map((report) => `
+    <button type="button" class="archive-item${report.reportDate === state.selectedDate ? " selected" : ""}" data-date="${escapeHtml(report.reportDate)}">
+      <time datetime="${escapeHtml(report.reportDate)}">${escapeHtml(report.reportDate.slice(5).replace("-", "/"))}</time>
+      <span>${escapeHtml(report.title)}</span>
+      <small>${escapeHtml(report.companies.join(" · ") || "行业跟踪")}</small>
+    </button>
+  `).join("");
+}
+
+function renderReport(report) {
+  if (!report) {
+    elements.report.innerHTML = '<div class="empty-report"><h1>暂无匹配日报</h1><p>调整关键词或主题筛选后再试。</p></div>';
+    return;
+  }
+
+  const tags = [...report.companies, ...report.themes].map((tag) => `<span>${escapeHtml(tag)}</span>`).join("");
+  const sections = report.sections.map((section, index) => `
+    <section class="report-section">
+      <div class="section-number">${String(index + 1).padStart(2, "0")}</div>
+      <div><h2>${escapeHtml(section.title)}</h2><ul>${section.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
+    </section>
+  `).join("");
+  const sources = report.sources.map((source, index) => `
+    <a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">
+      <span>${String(index + 1).padStart(2, "0")}</span>${escapeHtml(source.label)}<strong aria-hidden="true">↗</strong>
+    </a>
+  `).join("");
+
+  elements.report.innerHTML = `
+    <div class="report-header">
+      <div><time datetime="${escapeHtml(report.reportDate)}">${escapeHtml(formatDate(report.reportDate))}</time><h1>${escapeHtml(report.title)}</h1><p>${escapeHtml(report.summary)}</p></div>
+      <span class="report-type">晨会短版</span>
+    </div>
+    <div class="tag-row" aria-label="日报标签">${tags}</div>
+    <div class="report-sections">${sections}</div>
+    <footer class="source-block">
+      <h2>原始来源</h2><div class="source-list">${sources}</div>
+      <p class="disclaimer">资料基于公开信息整理，仅供研究交流；标注“需核实”的数据不作为正式投资依据。</p>
+    </footer>
+  `;
+}
+
+function render() {
+  const reports = filteredReports();
+  if (!reports.some((report) => report.reportDate === state.selectedDate)) state.selectedDate = reports[0]?.reportDate || "";
+  renderFilters();
+  renderArchive(reports);
+  renderReport(reports.find((report) => report.reportDate === state.selectedDate));
+}
+
+elements.search.addEventListener("input", (event) => { state.query = event.target.value; render(); });
+elements.filters.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-filter]");
+  if (!button) return;
+  state.filter = button.dataset.filter;
+  render();
+});
+elements.archive.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-date]");
+  if (!button) return;
+  state.selectedDate = button.dataset.date;
+  render();
+  if (window.innerWidth <= 820) elements.report.scrollIntoView({ behavior: "smooth" });
+});
+document.addEventListener("keydown", (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); elements.search.focus(); }
+});
+
+Promise.resolve({ ok: true, json: () => Promise.resolve(INLINE_REPORT_DATA) })
+  .then((response) => { if (!response.ok) throw new Error(`HTTP ${response.status}`); return response.json(); })
+  .then((data) => {
+    state.reports = [...(data.reports || [])].sort((a, b) => b.reportDate.localeCompare(a.reportDate));
+    state.selectedDate = state.reports[0]?.reportDate || "";
+    elements.sync.textContent = `已收录 ${state.reports.length} 期`;
+    render();
+  })
+  .catch(() => {
+    elements.sync.textContent = "档案读取失败";
+    elements.report.innerHTML = '<div class="empty-report"><h1>暂时无法读取日报</h1><p>请刷新页面后重试。</p></div>';
+  });
+</script>
 </body>
 </html>
