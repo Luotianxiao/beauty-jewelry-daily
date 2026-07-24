@@ -10,6 +10,27 @@
     <script>const INLINE_REPORT_DATA = {
   "reports": [
     {
+      "reportDate": "2026-07-24",
+      "title": "港股缩量修复，金价高位延续",
+      "summary": "7月23日港股风险偏好修复但成交缩量，国际金价继续处于4100美元/盎司以上。水羊转债进入强赎最后窗口，短期关注转股带来的股票供给变化。",
+      "companies": ["水羊股份", "周大福", "周生生", "老铺黄金"],
+      "themes": ["港股消费", "黄金珠宝", "转债赎回", "亚太消费", "个股边际变化"],
+      "sections": [
+        {"title": "今日核心结论", "items": ["7月23日恒生指数上涨1.28%至25210.81点，但成交额缩减至约2335亿港元，港股风险偏好修复，持续性仍待观察。", "国际现货黄金上一交易日上涨1.31%至4130.25美元/盎司，上金所现货黄金上涨1.36%至899元/克，珠宝行业继续处于高金价经营环境。", "水羊转债进入强赎最后窗口，短期转股可能增加股票供给，但对公司经营基本面影响中性。", "国际公司方面，未发现欧莱雅、雅诗兰黛、资生堂、历峰集团等新增中国或亚太区重大官方披露。"]},
+        {"title": "重点公告与公司动态", "items": ["水羊股份：7月23日发布第九次水羊转债提前赎回提示。赎回登记日为8月3日，赎回日为8月4日，赎回价格100.602元/张；7月30日起停止交易。未转股债券将被强制赎回。", "其余覆盖公司未发现需在晨会重点提示的新增重大公告。"]},
+        {"title": "股价与市场异动", "items": ["恒指上涨1.28%，恒生科技指数上涨0.65%，国企指数上涨1.23%；有色金属板块表现较强。", "A/H及国际覆盖公司的精确涨跌幅、成交额和资金流向尚缺乏可靠完整数据，需核实。"]},
+        {"title": "行业新闻与政策", "items": ["7月23日未发现对美妆珠宝投资判断构成新增重大影响的监管政策或消费税调整。"]},
+        {"title": "渠道与消费趋势", "items": ["金价持续处于4100美元/盎司以上，高金价有利于黄金资产属性及高端黄金品牌关注度，但仍需跟踪终端克重下降、客单价提升与销量承压之间的平衡。", "抖音、天猫、小红书及亚洲旅游零售未发现可交叉验证的新增日度经营数据。"]},
+        {"title": "个股边际变化", "items": ["水羊股份：转债强赎窗口临近—8月4日将实施提前赎回—短期转股可能增加股票供给并带来摊薄预期，对经营判断中性。", "除水羊股份外，今日未发现需特别提示的可靠个股边际变化。"]}
+      ],
+      "sources": [
+        {"label": "7月23日港股收盘及成交情况", "url": "https://www.nbd.com.cn/articles/2026-07-23/4504560.html"},
+        {"label": "中国银行：7月23日金市观察", "url": "https://www.boc.cn/fimarkets/fm7/202607/t20260723_25680777.html"},
+        {"label": "水羊转债提前赎回提示", "url": "https://www.cfi.net.cn/p20260723000633.html"},
+        {"label": "7月23日港股主要指数表现", "url": "https://finance.sina.com.cn/wm/2026-07-23/doc-iniiusme4635657.shtml"}
+      ]
+    },
+    {
       "reportDate": "2026-07-23",
       "title": "金价急涨驱动黄金珠宝逆势，美妆等待业绩验证",
       "summary": "7月22日伦敦金突破4100美元/盎司，品牌金饰克价同步上调，推动老铺黄金逆市上涨。A股美妆局部修复，珀莱雅上涨3.30%，但行情持续性仍需中报及618利润兑现验证。",
@@ -154,143 +175,6 @@
       </div>
     </main>
   <script>const FILTERS = ["全部", "美妆", "珠宝", "公告", "渠道", "政策"];
-const FILTER_ALIASES = {
-  美妆: ["美妆", "化妆品", "护肤", "胶原"],
-  珠宝: ["珠宝", "黄金", "金价"],
-  公告: ["公告", "分红", "权益分派"],
-  渠道: ["渠道", "618", "天猫", "抖音", "小红书", "同店"],
-  政策: ["政策", "监管", "社零", "统计局"],
-};
-
-const state = { reports: [], query: "", filter: "全部", selectedDate: "" };
-const elements = {
-  archive: document.querySelector("#archive-list"),
-  count: document.querySelector("#report-count"),
-  filters: document.querySelector("#quick-filters"),
-  report: document.querySelector("#report-view"),
-  search: document.querySelector("#search-input"),
-  sync: document.querySelector("#sync-text"),
-};
-
-function escapeHtml(value = "") {
-  return String(value).replace(/[&<>'"]/g, (char) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;",
-  })[char]);
-}
-
-function formatDate(date) {
-  return new Intl.DateTimeFormat("zh-CN", {
-    year: "numeric", month: "long", day: "numeric", weekday: "short",
-  }).format(new Date(`${date}T00:00:00+08:00`));
-}
-
-function searchableText(report) {
-  return JSON.stringify(report).toLowerCase();
-}
-
-function filteredReports() {
-  const query = state.query.trim().toLowerCase();
-  return state.reports.filter((report) => {
-    const text = searchableText(report);
-    const matchesTopic = state.filter === "全部" || FILTER_ALIASES[state.filter].some((word) => text.includes(word));
-    return matchesTopic && (!query || text.includes(query));
-  });
-}
-
-function renderFilters() {
-  elements.filters.innerHTML = FILTERS.map((filter) => `
-    <button type="button" class="filter-button${state.filter === filter ? " active" : ""}" data-filter="${filter}">${filter}</button>
-  `).join("");
-}
-
-function renderArchive(reports) {
-  elements.count.textContent = String(reports.length);
-  if (!reports.length) {
-    elements.archive.innerHTML = '<div class="empty-list">没有找到匹配的日报</div>';
-    return;
-  }
-  elements.archive.innerHTML = reports.map((report) => `
-    <button type="button" class="archive-item${report.reportDate === state.selectedDate ? " selected" : ""}" data-date="${escapeHtml(report.reportDate)}">
-      <time datetime="${escapeHtml(report.reportDate)}">${escapeHtml(report.reportDate.slice(5).replace("-", "/"))}</time>
-      <span>${escapeHtml(report.title)}</span>
-      <small>${escapeHtml(report.companies.join(" · ") || "行业跟踪")}</small>
-    </button>
-  `).join("");
-}
-
-function renderReport(report) {
-  if (!report) {
-    elements.report.innerHTML = '<div class="empty-report"><h1>暂无匹配日报</h1><p>调整关键词或主题筛选后再试。</p></div>';
-    return;
-  }
-
-  const tags = [...report.companies, ...report.themes].map((tag) => `<span>${escapeHtml(tag)}</span>`).join("");
-  const sections = report.sections.map((section, index) => `
-    <section class="report-section">
-      <div class="section-number">${String(index + 1).padStart(2, "0")}</div>
-      <div><h2>${escapeHtml(section.title)}</h2><ul>${section.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
-    </section>
-  `).join("");
-  const sources = report.sources.map((source, index) => `
-    <a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">
-      <span>${String(index + 1).padStart(2, "0")}</span>${escapeHtml(source.label)}<strong aria-hidden="true">↗</strong>
-    </a>
-  `).join("");
-
-  elements.report.innerHTML = `
-    <div class="report-header">
-      <div><time datetime="${escapeHtml(report.reportDate)}">${escapeHtml(formatDate(report.reportDate))}</time><h1>${escapeHtml(report.title)}</h1><p>${escapeHtml(report.summary)}</p></div>
-      <span class="report-type">晨会短版</span>
-    </div>
-    <div class="tag-row" aria-label="日报标签">${tags}</div>
-    <div class="report-sections">${sections}</div>
-    <footer class="source-block">
-      <h2>原始来源</h2><div class="source-list">${sources}</div>
-      <p class="disclaimer">资料基于公开信息整理，仅供研究交流；标注“需核实”的数据不作为正式投资依据。</p>
-    </footer>
-  `;
-}
-
-function render() {
-  const reports = filteredReports();
-  if (!reports.some((report) => report.reportDate === state.selectedDate)) state.selectedDate = reports[0]?.reportDate || "";
-  renderFilters();
-  renderArchive(reports);
-  renderReport(reports.find((report) => report.reportDate === state.selectedDate));
-}
-
-elements.search.addEventListener("input", (event) => { state.query = event.target.value; render(); });
-elements.filters.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-filter]");
-  if (!button) return;
-  state.filter = button.dataset.filter;
-  render();
-});
-elements.archive.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-date]");
-  if (!button) return;
-  state.selectedDate = button.dataset.date;
-  render();
-  if (window.innerWidth <= 820) elements.report.scrollIntoView({ behavior: "smooth" });
-});
-document.addEventListener("keydown", (event) => {
-  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); elements.search.focus(); }
-});
-
-Promise.resolve({ ok: true, json: () => Promise.resolve(INLINE_REPORT_DATA) })
-  .then((response) => { if (!response.ok) throw new Error(`HTTP ${response.status}`); return response.json(); })
-  .then((data) => {
-    state.reports = [...(data.reports || [])].sort((a, b) => b.reportDate.localeCompare(a.reportDate));
-    state.selectedDate = state.reports[0]?.reportDate || "";
-    elements.sync.textContent = `已收录 ${state.reports.length} 期`;
-    render();
-  })
-  .catch(() => {
-    elements.sync.textContent = "档案读取失败";
-    elements.report.innerHTML = '<div class="empty-report"><h1>暂时无法读取日报</h1><p>请刷新页面后重试。</p></div>';
-  });
-</script>
-<script>const FILTERS = ["全部", "美妆", "珠宝", "公告", "渠道", "政策"];
 const FILTER_ALIASES = {
   美妆: ["美妆", "化妆品", "护肤", "胶原"],
   珠宝: ["珠宝", "黄金", "金价"],
